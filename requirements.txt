@@ -1,0 +1,6 @@
+numpy==2.1.3
+pandas==2.2.3
+scipy==1.14.1
+matplotlib==3.9.3
+biopython==1.84
+logomaker==0.8
