@@ -1,4 +1,25 @@
-# src/em.py
+"""
+Run this file using command:
+```
+python -c "
+from src.model import initialize_model
+from src.em import run_em_algorithm
+import numpy as np
+import os
+
+# Ensure results directory exists
+if not os.path.exists('results'):
+    os.makedirs('results')
+
+model = initialize_model()
+final_model = run_em_algorithm(model, 'data/cleaned_sequences.fasta', W=8, max_iterations=80)
+
+# After EM converges, save the discovered PWM
+np.save('results/discovered_pwm.npy', final_model.pwm)
+print('Discovered PWM saved to results/discovered_pwm.npy')
+"
+```
+"""
 import numpy as np
 from Bio import SeqIO
 from math import log
@@ -86,10 +107,16 @@ def run_em_algorithm(model, sequence_file, W, max_iterations=50, convergence_thr
         posteriors = expectation_step(model, sequences, W)
         model = maximization_step(model, sequences, posteriors, W)
         ll = compute_log_likelihood(model, sequences, W)
+        
         print(f"Iteration {iteration}, Log-Likelihood: {ll}")
         
-        if prev_ll is not None and abs(ll - prev_ll) < convergence_threshold:
-            print("Convergence reached.")
-            break
+        # Check for convergence
+        if prev_ll is not None:
+            ll_diff = abs(ll - prev_ll)
+            if ll_diff < convergence_threshold:
+                print("Convergence reached.")
+                break
+                
         prev_ll = ll
     return model
+
