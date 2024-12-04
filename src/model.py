@@ -1,4 +1,6 @@
-# src/model.py
+"""
+RUn using `python src/model.py
+"""
 import json
 import numpy as np
 
@@ -13,9 +15,12 @@ def initialize_model(config_path="configs/model_params.json"):
         params = json.load(f)
     W = params["motif_width"]
     alph_len = len(params["alphabet"])
-    pwm = np.ones((W, alph_len)) / alph_len
+
+    pwm = np.random.random((W, alph_len))
+    pwm = pwm / pwm.sum(axis=1, keepdims=True)
+
     background_probs = np.array(params["background_probs"])
-    motif_prior = 0.01
+    motif_prior = 0.05
     model = FiniteMixtureModel(pwm, background_probs, motif_prior)
     return model
 
