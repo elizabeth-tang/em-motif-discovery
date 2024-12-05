@@ -1,4 +1,3 @@
-# scripts/preprocessing.py
 from Bio import SeqIO
 
 input_file = "data/raw/gene.fna"
