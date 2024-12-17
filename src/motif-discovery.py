@@ -14,7 +14,7 @@ def initialize_params(alphabet_size, W):
 
 
 # Expectation step
-def expectation_step(X, motif_probs, bg_probs, lambda_param):
+def expectation_step(X, motif_probs, bg_probs, lambda_param, alpha=0.01):
     """
     Compute the expected membership probabilities (E-step).
     """
@@ -26,26 +26,36 @@ def expectation_step(X, motif_probs, bg_probs, lambda_param):
         P_motif = lambda_param * np.prod(
             [motif_probs[j, char] for j, char in enumerate(subseq)]
         )
-        P_bg = (1 - lambda_param) * np.prod([bg_probs[char] for char in subseq])
+        P_bg = (1 - lambda_param) * \
+            np.prod([bg_probs[char] for char in subseq])
 
-        # Normalize probabilities to sum to 1
+#        Normalize probabilities to sum to 1
         total = P_motif + P_bg
         Z[i, 0] = P_motif / total  # Probability for motif
         Z[i, 1] = P_bg / total  # Probability for background
 
     for i in range(n - W + 1):  # Iterate over all windows of size W
-        window_sum_motif = np.sum(Z[i : i + W, 0])  # Sum over motif probabilities
+        # Sum over motif probabilities
+        window_sum_motif = np.sum(Z[i: i + W, 0])
         if window_sum_motif > 1:
-            Z[i : i + W, 0] *= 1 / window_sum_motif  # Scale motif probabilities
+            Z[i: i + W, 0] *= 1 / window_sum_motif  # Scale motif probabilities
 
-        window_sum_bg = np.sum(Z[i : i + W, 1])  # Sum over background probabilities
+        # Sum over background probabilities
+        window_sum_bg = np.sum(Z[i: i + W, 1])
         if window_sum_bg > 1:
-            Z[i : i + W, 1] *= 1 / window_sum_bg
+            Z[i: i + W, 1] *= 1 / window_sum_bg
+
+    # Z_sum = Z.sum(axis=1, keepdims=True)
+    # Z /= Z_sum
+
+    assert np.allclose(np.sum(Z, axis=1),
+                       1), "Probabilities not normalized correctly."
 
     return Z
 
-
 # Maximization step
+
+
 def maximization_step(X, Z, alphabet_size, W):
     """
     Update the motif and background model parameters and mixing coefficient (M-step).
@@ -83,10 +93,12 @@ def compute_log_likelihood(X, Z, motif_probs, bg_probs, lambda_param, eps=1e-6):
         P_motif = lambda_param * np.prod(
             [motif_probs[j, char] for j, char in enumerate(subseq)]
         )
-        P_bg = (1 - lambda_param) * np.prod([bg_probs[char] for char in subseq])
+        P_bg = (1 - lambda_param) * \
+            np.prod([bg_probs[char] for char in subseq])
 
         # Add contributions from motif and background components
-        log_likelihood += Z[i, 0] * np.log(P_motif + eps) + Z[i, 1] * np.log(P_bg + eps)
+        log_likelihood += Z[i, 0] * \
+            np.log(P_motif + eps) + Z[i, 1] * np.log(P_bg + eps)
 
     return log_likelihood
 
@@ -105,7 +117,8 @@ def run_em(X, alphabet_size, W, max_iters=1000, tol=1e-4):
         Z = expectation_step(X, motif_probs, bg_probs, lambda_param)
 
         # M-step
-        motif_probs, bg_probs, lambda_param = maximization_step(X, Z, alphabet_size, W)
+        motif_probs, bg_probs, lambda_param = maximization_step(
+            X, Z, alphabet_size, W)
 
         # Log-likelihood
         log_likelihood = compute_log_likelihood(
@@ -128,8 +141,10 @@ def discover_motifs(sequences, W, alphabet):
     """
     # Map sequences to numerical representation
     char_to_index = {char: i for i, char in enumerate(alphabet)}
-    sequences_num = [[char_to_index[char] for char in seq] for seq in sequences]
-    X = [seq[i : i + W] for seq in sequences_num for i in range(len(seq) - W + 1)]
+    sequences_num = [[char_to_index[char]
+                      for char in seq] for seq in sequences]
+    X = [seq[i: i + W]
+         for seq in sequences_num for i in range(len(seq) - W + 1)]
     alphabet_size = len(alphabet)
 
     # Run EM to discover motifs
@@ -183,13 +198,14 @@ def read_fasta(filename):
 if __name__ == "__main__":
     # Input sequences
     # sequences = ["ACGTTGAC", "TGCACGTT", "ACGACGTT", "GTTACGTC"]
-    sequences = read_fasta("data/cleaned_sequences.fasta")
-    # sequences = read_fasta("data/simple_data/test.fasta")
-    W = 6  # Width of the motif
+   # sequences = read_fasta("data/cleaned_sequences.fasta")
+    sequences = read_fasta("data/simple_data/motif.fasta")
+    W = 4  # Width of the motif
     alphabet = ["A", "C", "G", "T"]
 
     # Discover motifs
-    motif_probs, bg_probs, lambda_param = discover_motifs(sequences, W, alphabet)
+    motif_probs, bg_probs, lambda_param = discover_motifs(
+        sequences, W, alphabet)
 
     # Print results
     print("\nMotif Position Weight Matrix:")

@@ -26,34 +26,39 @@ def expectation_step(X, motif_probs, bg_probs, lambda_param, seq_lens):
         P_motif = lambda_param * np.prod(
             [motif_probs[j, char] for j, char in enumerate(subseq)]
         )
-        P_bg = (1 - lambda_param) * np.prod([bg_probs[char] for char in subseq])
+        P_bg = (1 - lambda_param) * \
+            np.prod([bg_probs[char] for char in subseq])
 
         # Normalize probabilities to sum to 1
         total = P_motif + P_bg
-        Z[i, 0] = P_motif / total  # Probability for motif
-        Z[i, 1] = P_bg / total  # Probability for background
+    #     Z[i, 0] = P_motif / total  # Probability for motif
+    #     Z[i, 1] = P_bg / total  # Probability for background
 
-    i = 0
-    for seq_len in seq_lens:
-        window_sum_motif = np.sum(Z[i : i + seq_len, 0])
-        if window_sum_motif > 1:
-            Z[i : i + seq_len, 0] *= 1 / window_sum_motif
-        window_sum_bg = np.sum(
-            Z[i : i + seq_len, 1]
-        )  # Sum over background probabilities
-        if window_sum_bg > 1:
-            Z[i : i + seq_len, 1] *= 1 / window_sum_bg
-        i += seq_len
-
-    # for i in range(n - W + 1):  # Iterate over all windows of size W
-    #     window_sum_motif = np.sum(Z[i : i + W, 0])  # Sum over motif probabilities
+    # i = 0
+    # for seq_len in seq_lens:
+    #     window_sum_motif = np.sum(Z[i: i + seq_len, 0])
     #     if window_sum_motif > 1:
-    #         Z[i : i + W, 0] *= 1 / window_sum_motif  # Scale motif probabilities
-
-    # for j in range(n - W + 1):
-    #     window_sum_bg = np.sum(Z[j : j + W, 1])  # Sum over background probabilities
+    #         Z[i: i + seq_len, 0] *= 1 / window_sum_motif
+    #     window_sum_bg = np.sum(
+    #         Z[i: i + seq_len, 1]
+    #     )  # Sum over background probabilities
     #     if window_sum_bg > 1:
-    #         Z[j : j + W, 1] *= 1 / window_sum_bg
+    #         Z[i: i + seq_len, 1] *= 1 / window_sum_bg
+    #     i += seq_len
+        if total > 0:
+            Z[i, 0] = P_motif / total  # Probability for motif
+            Z[i, 1] = P_bg / total  # Probability for background
+        else:
+            Z[i, 0] = 0
+            Z[i, 1] = 1  # This case should not normally occur
+
+    # Ensure global normalization across rows (each subsequence)
+    row_sums = np.sum(Z, axis=1)
+    Z /= row_sums[:, None]  # Normalize each row to sum to 1
+
+   # print("this is Z: ", Z)
+    assert np.allclose(np.sum(Z, axis=1),
+                       1), "Probabilities not normalized correctly."
 
     return Z
 
@@ -96,10 +101,12 @@ def compute_log_likelihood(X, Z, motif_probs, bg_probs, lambda_param, eps=1e-6):
         P_motif = lambda_param * np.prod(
             [motif_probs[j, char] for j, char in enumerate(subseq)]
         )
-        P_bg = (1 - lambda_param) * np.prod([bg_probs[char] for char in subseq])
+        P_bg = (1 - lambda_param) * \
+            np.prod([bg_probs[char] for char in subseq])
 
         # Add contributions from motif and background components
-        log_likelihood += Z[i, 0] * np.log(P_motif + eps) + Z[i, 1] * np.log(P_bg + eps)
+        log_likelihood += Z[i, 0] * \
+            np.log(P_motif + eps) + Z[i, 1] * np.log(P_bg + eps)
 
     return log_likelihood
 
@@ -119,7 +126,8 @@ def run_em(X, alphabet_size, W, seq_lens, max_iters=500, tol=1e-4):
         Z = expectation_step(X, motif_probs, bg_probs, lambda_param, seq_lens)
 
         # M-step
-        motif_probs, bg_probs, lambda_param = maximization_step(X, Z, alphabet_size, W)
+        motif_probs, bg_probs, lambda_param = maximization_step(
+            X, Z, alphabet_size, W)
 
         # Log-likelihood
         log_likelihood = compute_log_likelihood(
@@ -144,12 +152,13 @@ def discover_motifs(sequences, W, alphabet):
     """
     # Map sequences to numerical representation
     char_to_index = {char: i for i, char in enumerate(alphabet)}
-    sequences_num = [[char_to_index[char] for char in seq] for seq in sequences]
+    sequences_num = [[char_to_index[char]
+                      for char in seq] for seq in sequences]
     X = []
     seq_lens = []
     for seq in sequences_num:
         for i in range(len(seq) - W + 1):
-            X.append(seq[i : i + W])
+            X.append(seq[i: i + W])
         seq_lens.append(len(seq) - W + 1)
     alphabet_size = len(alphabet)
 
@@ -207,8 +216,8 @@ if __name__ == "__main__":
     # Input sequences
     # sequences = ["ACGTTGAC", "TGCACGTT", "ACGACGTT", "GTTACGTC"]
     # sequences = read_fasta("data/cleaned_sequences.fasta")
-    # sequences = read_fasta("data/simple_data/test.fasta")
-    sequences = read_fasta("data/simple_data/motif.fasta")
+    # sequences = read_fasta("data/simpe_data/test.fasta")
+    sequences = read_fasta("data/cleaned_sequences.fasta")
     W = 10  # Width of the motif
     alphabet = ["A", "C", "G", "T"]
 
