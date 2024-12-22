@@ -1,8 +1,0 @@
-{
-    "alphabet": ["A","C","G","T"],
-    "motif_width": 10,
-    "motif_count": 1,
-    "background_probs": [0.28066148120082907, 0.24826717778421628, 0.22323876172858767, 0.24783257928636698],
-    "max_iterations": 50,
-    "convergence_threshold": 1e-5
-}
