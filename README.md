@@ -23,6 +23,21 @@ This project implements a motif discovery algorithm using the Expectation-Maximi
 
 Throughout the development and execution of this project, we encountered various challenges. This README documents the process, the problems we faced, the debugging steps taken, and the solutions implemented. It serves as a detailed record of the coding and troubleshooting journey.
 
+## How to Run:
+
+1. **Setup:**
+  - Created a virtual environment and installed necessary Python packages (`numpy`, `pandas`, `scipy`, `biopython`, `matplotlib`, `logomaker`, `seaborn`).
+  - In `src/motif_discovery`, modify the below fields to the appropriate data/settings that you want to test on:
+    - sequences: the DNA sequences to extract the motif from. A few options are already available
+    - width: the width of the motif to find
+    - trials: the number of trials to run
+2. **Running Expectation-Maximization Algorithm:**
+  - Run `python src/motif_discovery.py`
+3. **Visualization:**
+  - Copy and paste the Motif Position Weight Matrix into the data_str field of `src/visualization.ipynb`
+  - Run the below cells to create the motif logo and a heatmap of the PWM
+
+
 ## Project Steps and Implementation Details
 
 1. **Initial Setup:**
@@ -36,7 +51,7 @@ Throughout the development and execution of this project, we encountered various
   - Downloaded a known motif PFM from JASPAR (e.g., `MA0011.1.pfm`) for comparison.
 
 3. **Running the EM Algorithm:**
-  - Implemented `src/motif_discovery` which contains the EM algorithm
+  - Implemented `src/motif_discovery.py` which contains the EM algorithm
   - After running EM, saved the discovered PWM to `results/discovered_pwm.npy`.
   - Compared discovered PWM with the known PWM by converting the known PFM to a PWM and computing KL divergence.
 
@@ -52,18 +67,6 @@ Throughout the development and execution of this project, we encountered various
 
 - **Parameter Tuning:**  
   Start with known or literature-supported motif widths. Use background probabilities derived from the data to give a more realistic model. Try increasing `max_iterations` or adjusting the motif_prior if the motif fails to emerge.
-
-
-## Conclusion
-
-Through careful debugging, parameter adjustments, data quality checks, and code refinements, we addressed numerous issues:
-
-- We ensured that discovered and known PWMs were correctly oriented.
-- We verified that the evaluation script used the correct input PWMs.
-- We introduced variability in initialization and tested multiple runs.
-- We refined parameters and verified that the motif logo is rendered from a properly shaped PWM.
-
-This systematic approach to debugging and refining the code and analysis pipelines helped us move from incorrect results to a more stable and meaningful motif discovery process.
 
 
 
