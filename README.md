@@ -33,7 +33,9 @@ Throughout the development and execution of this project, we encountered various
     - trials: the number of trials to run
 2. **Running Expectation-Maximization Algorithm:**
   - Run `python src/motif_discovery.py`
-3. **Visualization:**
+3. **Analysis and Visualization:**
+  - In `scripts/evaluate_performance.py`, modify known_pfm to be the corresponding pfm of the sequence you just extracted from.
+  - Run `python scripts/evaluate_performance.py --input results/discovered_pwm.npy` to find KL divergence
   - Copy and paste the Motif Position Weight Matrix into the data_str field of `src/visualization.ipynb`
   - Run the below cells to create the motif logo and a heatmap of the PWM
 

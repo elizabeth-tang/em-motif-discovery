@@ -195,14 +195,14 @@ if __name__ == "__main__":
     # Input sequences
 
     # Test/Artificial Sequences
-    sequences = ["ACGTTGAC", "TGCACGTT", "ACGACGTT", "GTTACGTT"]  # W = 5
+    # sequences = ["ACGTTGAC", "TGCACGTT", "ACGACGTT", "GTTACGTT"]  # W = 5
     # sequences = read_fasta("data/simple_data/test.fasta") # W = 4
     # sequences = read_fasta("data/simple_data/motif.fasta") # W = 10
 
     # Real Sequences
-    # sequences = read_fasta("data/real_data/U10081.1.fasta")  # W = 11
+    sequences = read_fasta("data/real_data/U10081.1.fasta")  # W = 11
     # sequences = read_fasta("data/real_data/MA0011.1.fasta") # W = 6, 8
-    W = 5  # Width of the motif
+    W = 11  # Width of the motif
     trials = 10
     alphabet = ["A", "C", "G", "T"]
 
